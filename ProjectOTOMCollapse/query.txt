@@ -1,0 +1,25 @@
+﻿SELECT 
+	R.RiskId,RREF.Reference,PARENTRISK.Description AS 'Scheme',
+	CASE
+		WHEN RREL.RiskRelationTypeId = 1
+				THEN 'New Business'
+		WHEN RREL.RiskRelationTypeId = 2
+				THEN 'MTA'
+		ELSE	'RENEWAL'
+	END AS 'Transaction Type',
+	CASE 
+		WHEN ESA.IsRequest = 1
+			THEN 'Request Payload'
+		ELSE
+			'Response Payload'
+	END AS 'Exchange Type',
+	CONVERT(XML,ESA.PayLoad) AS 'Payload',
+	ESA.CreatedDate
+	
+FROM RISK R
+JOIN RISK PARENTRISK ON PARENTRISK.RiskId = R.ParentRiskId
+JOIN RiskReference RREF ON RREF.RiskId = R.RiskId
+JOIN RiskRelation RREL ON RREL.RiskId = RREF.RiskId
+JOIN ExternalServiceAudit ESA ON ESA.Identifier = CONVERT(VARCHAR(MAX),RREF.RiskId)
+WHERE RREF.Reference = 'REPLACEME'
+ORDER BY ESA.CreatedDate DESC
